@@ -3,7 +3,7 @@
 
 The QS State Hook allows you to manage component state by storing values in the URL search string.
 
-![?¿ QS State](./docs/media/qs-state.png)
+![?¿ QS State](https://raw.githubusercontent.com/danielfdsilva/qs-state-hook/main/docs/media/qs-state.png)
 
 **Table of contents**
 - [QS State Hook](#-qs-state-hook)
@@ -234,11 +234,11 @@ Since `dog` is not a valid value for `animalValue` it reverts to default and is 
 ## Flow Diagrams
 
 The diagram below represents the flow when a value is read from the URL.
-![Hydrator flow](./docs/media/hydrator.png)
+![Hydrator flow](https://raw.githubusercontent.com/danielfdsilva/qs-state-hook/main/docs/media/hydrator.png)
 
 
 The diagram below represents the flow when a value is set to the state and the URL.
-![Dehydrator flow](./docs/media/dehydrator.png)
+![Dehydrator flow](https://raw.githubusercontent.com/danielfdsilva/qs-state-hook/main/docs/media/dehydrator.png)
 
 ## Advanced
 A more advanced usage allows you to use `objects` as a state value. Since `objects` are not easily converted to strings, you'll always have to provide an `hydrator` and `dehydrator`:
