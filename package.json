@@ -4,10 +4,13 @@
   "description": "URL querystring state manager",
   "main": "dist/index.js",
   "scripts": {
-    "build": "./node_modules/.bin/babel src --out-file dist/index.js",
+    "build": "rollup -c",
     "lint": "eslint src/ --ext .js",
     "test": "jest"
   },
+  "files": [
+    "dist"
+  ],
   "author": {
     "name": "Daniel da Silva",
     "url": "http://danielfdsilva.com"
@@ -27,6 +30,7 @@
     "@babel/plugin-transform-spread": "^7.12.1",
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-react": "^7.12.10",
+    "@rollup/plugin-babel": "^5.2.2",
     "@testing-library/react-hooks": "^5.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.18.0",
@@ -41,6 +45,7 @@
     "prettier": "^2.2.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
+    "rollup": "^2.38.0",
     "sinon": "^9.2.3"
   },
   "peerDependencies": {
