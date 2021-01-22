@@ -1,12 +1,25 @@
+
 # ?¿ QS State Hook
 
 The QS State Hook allows you to manage component state by storing values in the URL search string.
 
 ![?¿ QS State](./docs/media/qs-state.png)
 
+**Table of contents**
+- [QS State Hook](#-qs-state-hook)
+    - [Motivation](#motivation)
+  - [Getting started](#getting-started)
+    - [useQsStateCreator](#useqsstatecreator)
+    - [useQsState](#useqsstate)
+      - [Hydrator and Dehydrator](#hydrator-and-dehydrator)
+      - [Validator](#validator)
+  - [Flow Diagrams](#flow-diagrams)
+  - [Advanced](#advanced)
+
 ### Motivation
-Certain page state should be shareable. This becomes critical when we're doing data visualizations or want to share the current state of the page we're viewing. Things like order options or filters applied to a data table should be easy to share.
-Generating a url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult. The QS State Hook aims to solve this problem, making it easy to get and set the url state.
+Certain page state should be shareable. This becomes critical when we're doing data visualizations or want to share the current state of the page we're viewing. Things like order options or filters applied to a data table should be easy to share.  
+Generating a url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult  
+The QS State Hook aims to solve this problem, making it easy to get and set the url state.
 
 ## Getting started
 
@@ -46,7 +59,8 @@ const useQsState = useQsStateCreator({
   commit: // Commit function.
 });
 ```
-**?¿ QS State Hook is not a routing engine and doesn't do any routing.**
+**QS State Hook is not a routing engine and doesn't do any routing.**
+
 That being said there are a couple of things that are up to you to ensure:
 - The component must re-render on every location change. This is needed so QS State can pick up the location change.
 - You must provide a function to store the new values in the url. This will depend on the routing engine and how it handles navigation. This is needed because other parts of your app may need to respond to location changes.
@@ -183,10 +197,6 @@ setAnimalColor('red');
 #### Validator
 The validator is used to ensure that the values read from the url and set to it are valid.
 
-![Hydrator flow](./docs/media/hydrator.png)
-
-![Dehydrator flow](./docs/media/dehydrator.png)
-
 The `validator` property accepts an array of valid options or a function for a custom validation:
 ```js
 const [animalValue, setAnimalValue]  = useQsState(useMemo(() => ({
@@ -221,7 +231,16 @@ setAnimalColor('white');
 
 Since `dog` is not a valid value for `animalValue` it reverts to default and is removed from the URL.
 
-### Advanced
+## Flow Diagrams
+
+The diagram below represents the flow when a value is read from the URL.
+![Hydrator flow](./docs/media/hydrator.png)
+
+
+The diagram below represents the flow when a value is set to the state and the URL.
+![Dehydrator flow](./docs/media/dehydrator.png)
+
+## Advanced
 A more advanced usage allows you to use `objects` as a state value. Since `objects` are not easily converted to strings, you'll always have to provide an `hydrator` and `dehydrator`:
 
 ```js
