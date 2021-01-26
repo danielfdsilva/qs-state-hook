@@ -1,6 +1,8 @@
 
 # ?¿ QS State Hook
 
+![qs-state-hook](https://github.com/danielfdsilva/qs-state-hook/workflows/qs-state-hook/badge.svg)
+
 The QS State Hook allows you to manage component state by storing values in the URL search string.
 
 ![?¿ QS State](https://raw.githubusercontent.com/danielfdsilva/qs-state-hook/main/docs/media/qs-state.png)
