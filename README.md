@@ -1,9 +1,11 @@
 
 # ?¿ QS State Hook
 
+![qs-state-hook](https://github.com/danielfdsilva/qs-state-hook/workflows/qs-state-hook/badge.svg)
+
 The QS State Hook allows you to manage component state by storing values in the URL search string.
 
-![?¿ QS State](./docs/media/qs-state.png)
+![?¿ QS State](https://raw.githubusercontent.com/danielfdsilva/qs-state-hook/main/docs/media/qs-state.png)
 
 **Table of contents**
 - [QS State Hook](#-qs-state-hook)
@@ -17,8 +19,8 @@ The QS State Hook allows you to manage component state by storing values in the 
   - [Advanced](#advanced)
 
 ### Motivation
-Certain page state should be shareable. This becomes critical when we're doing data visualizations or want to share the current state of the page we're viewing. Things like order options or filters applied to a data table should be easy to share.  
-Generating a url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult  
+Certain page states should be shareable. This becomes critical when we're doing data visualizations or want to share the current state of the page we're viewing. Things like order options or filters applied to a data table should be easy to share.  
+Generating an url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult  
 The QS State Hook aims to solve this problem, making it easy to get and set the url state.
 
 ## Getting started
@@ -212,7 +214,7 @@ const [animalColor, setAnimalColor]  = useQsState(useMemo(() => ({
 }), []));
 ```
 
-With these state definitions reading from a url like `http://qsstatehook.fake/?animal=fish&color=blue` would result in:
+With these state definitions reading from an url like `http://qsstatehook.fake/?animal=fish&color=blue` would result in:
 ```js
 // animalValue = fish
 // animalColor = black
@@ -234,11 +236,11 @@ Since `dog` is not a valid value for `animalValue` it reverts to default and is 
 ## Flow Diagrams
 
 The diagram below represents the flow when a value is read from the URL.
-![Hydrator flow](./docs/media/hydrator.png)
+![Hydrator flow](https://raw.githubusercontent.com/danielfdsilva/qs-state-hook/main/docs/media/hydrator.png)
 
 
 The diagram below represents the flow when a value is set to the state and the URL.
-![Dehydrator flow](./docs/media/dehydrator.png)
+![Dehydrator flow](https://raw.githubusercontent.com/danielfdsilva/qs-state-hook/main/docs/media/dehydrator.png)
 
 ## Advanced
 A more advanced usage allows you to use `objects` as a state value. Since `objects` are not easily converted to strings, you'll always have to provide an `hydrator` and `dehydrator`:
