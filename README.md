@@ -17,8 +17,8 @@ The QS State Hook allows you to manage component state by storing values in the 
   - [Advanced](#advanced)
 
 ### Motivation
-Certain page state should be shareable. This becomes critical when we're doing data visualizations or want to share the current state of the page we're viewing. Things like order options or filters applied to a data table should be easy to share.  
-Generating a url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult  
+Certain page states should be shareable. This becomes critical when we're doing data visualizations or want to share the current state of the page we're viewing. Things like order options or filters applied to a data table should be easy to share.  
+Generating an url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult  
 The QS State Hook aims to solve this problem, making it easy to get and set the url state.
 
 ## Getting started
@@ -212,7 +212,7 @@ const [animalColor, setAnimalColor]  = useQsState(useMemo(() => ({
 }), []));
 ```
 
-With these state definitions reading from a url like `http://qsstatehook.fake/?animal=fish&color=blue` would result in:
+With these state definitions reading from an url like `http://qsstatehook.fake/?animal=fish&color=blue` would result in:
 ```js
 // animalValue = fish
 // animalColor = black
