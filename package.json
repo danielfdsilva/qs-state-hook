@@ -1,6 +1,6 @@
 {
   "name": "qs-state-hook",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "URL querystring state manager",
   "main": "dist/index.js",
   "source": "src/index.js",
