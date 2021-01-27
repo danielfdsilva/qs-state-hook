@@ -3,25 +3,45 @@
   "version": "1.0.0",
   "description": "URL querystring state manager",
   "main": "dist/index.js",
+  "source": "src/index.js",
+  "keywords": [
+    "react",
+    "url",
+    "query",
+    "parameters",
+    "hook",
+    "hooks",
+    "query param",
+    "react use",
+    "state"
+  ],
   "scripts": {
     "build": "rollup -c",
     "lint": "eslint src/ test/ --ext .js",
     "test": "jest"
   },
-  "files": [
-    "dist"
-  ],
   "author": {
     "name": "Daniel da Silva",
     "url": "http://danielfdsilva.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielfdsilva/qs-state-hook.git"
+  },
+  "bugs": {
+    "url": "https://github.com/danielfdsilva/qs-state-hook/issues"
+  },
+  "homepage": "https://github.com/danielfdsilva/qs-state-hook/#-qs-state-hook",
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "14.x"
+  },
   "dependencies": {
     "lodash.debounce": "^4.0.8",
     "qs": "^6.9.6"
-  },
-  "engines": {
-    "node": "14.x"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",
