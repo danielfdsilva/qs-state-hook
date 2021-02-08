@@ -79,7 +79,7 @@ function Component () {
   useLocation();
 
   const useQsState = useQsStateCreator({
-    commit: history
+    commit: history.push
   });
 
   // ... remaining code.
