@@ -91,6 +91,8 @@ export function useQsStateCreator(options = {}) {
      *
      */
     function useQsState(def) {
+      const mounted = useRef(false);
+
       // Setup defaults.
       const {
         // Function to convert the value from the string before using it.
@@ -125,7 +127,7 @@ export function useQsStateCreator(options = {}) {
       };
 
       // Store the state relative to this qs key.
-      const [valueState, setValueState] = useState();
+      const [valueState, setValueState] = useState(getValueFromURL(locSearch));
 
       // We need a ref to store the state value, otherwise the closure created by
       // the useEffect always shows the original value. We can't pass the value as
@@ -155,6 +157,13 @@ export function useQsStateCreator(options = {}) {
       // "Listen" to url changes and replace only if different from the currently
       // stored state.
       useEffect(() => {
+        // Ensure this check only runs once the component mounted.
+        // The initial url setting is done when the state is initialized.
+        if (!mounted.current) {
+          mounted.current = true;
+          return;
+        }
+
         const v = getValueFromURL(locSearch);
         if (!isEqualObj(v, stateRef.current)) {
           setValueState(v);

@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
+import { renderHook as renderHookServer } from '@testing-library/react-hooks/server';
 import sinon from 'sinon';
 import { useMemo } from 'react';
 
@@ -66,6 +67,37 @@ describe('QS State Hook', () => {
 
     expect(result.current.val).toBe('cat');
     expect(result.current.val2).toBe('tulip');
+  });
+
+  it('uses value from when initialized', () => {
+    const location = {
+      search: '?val=cat'
+    };
+
+    // For this test we use the server version of renderHook to ensure that the
+    // qsState's internal useEffect doesn't run. This is needed to ensure that
+    // we can test the initial value, otherwise we'd only test after the
+    // useEffect runs and miss capturing that first react render between the
+    // state initialization and setting the value through useEffect
+    const { result } = renderHookServer(() => {
+      const useQsState = useQsStateCreator({
+        commit: noop,
+        location
+      });
+
+      return useQsState(
+        useMemo(
+          () => ({
+            key: 'val'
+          }),
+          []
+        )
+      );
+    });
+
+    const [value, setValue] = result.current;
+    expect(value).toBe('cat');
+    expect(typeof setValue).toBe('function');
   });
 
   it('uses default when value is not in url', () => {
