@@ -165,7 +165,12 @@ export function useQsStateCreator(options = {}) {
         }
 
         const v = getValueFromURL(locSearch);
-        if (!isEqualObj(v, stateRef.current)) {
+
+        // The url should only be checked as a source of truth once all the
+        // commits have settled.
+        const hasPendingCommits = Object.keys(commitQueue).length;
+
+        if (!hasPendingCommits && !isEqualObj(v, stateRef.current)) {
           setValueState(v);
         }
         /* eslint-disable-next-line react-hooks/exhaustive-deps */
