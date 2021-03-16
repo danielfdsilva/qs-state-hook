@@ -86,10 +86,13 @@ function Component () {
 }
 ```
 
-If you are using `gatsby` things get way simpler, since re-rendering a page on location change is built in:
+If you are using `gatsby` things get simpler, since re-rendering a page on location change is built in, when using `navigate`:
 ```js
+import { navigate } from 'gatsby';
 function Component () {
-  const useQsState = useQsStateCreator();
+  const useQsState = useQsStateCreator({
+    commit: ({ search }) => navigate(`?${search}`)
+  });
 
   // ... remaining code.
 }
