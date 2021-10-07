@@ -1,6 +1,6 @@
 {
   "name": "qs-state-hook",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "URL querystring state manager",
   "main": "dist/index.js",
   "source": "src/index.js",
@@ -37,7 +37,7 @@
     "dist"
   ],
   "engines": {
-    "node": "14.x"
+    "node": ">=14.x"
   },
   "dependencies": {
     "lodash.debounce": "^4.0.8",
