@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import qs from 'qs';
 import debounce from 'lodash.debounce';
 
@@ -28,9 +28,12 @@ export function isEqualObj(a, b) {
 export const COMMIT_DELAY = 100;
 let commitQueue = {};
 
+const identityFn = (v) => v;
+
 export function useQsStateCreator(options = {}) {
   const {
     commit: commitToLocation = history.push,
+    // location is a mutable object.
     location = history.location
   } = options;
 
@@ -96,24 +99,28 @@ export function useQsStateCreator(options = {}) {
       // Setup defaults.
       const {
         // Function to convert the value from the string before using it.
-        hydrator = (v) => v,
+        hydrator = identityFn,
         // Function to convert the value to the string before using it.
-        dehydrator = (v) => v
+        dehydrator = identityFn
       } = def;
 
       // Location search
       const locSearch = location.search;
 
       // Get the correct validator. Array of items, function or default.
-      const validator = (v) => {
-        if (def.validator && typeof def.validator.indexOf === 'function') {
-          return def.validator.indexOf(v) !== -1;
-        } else if (typeof def.validator === 'function') {
-          return def.validator(v);
-        } else {
-          return !!v;
-        }
-      };
+      const validator = useCallback(
+        (v) => {
+          const userValidator = def.validator;
+          if (userValidator && typeof userValidator.indexOf === 'function') {
+            return userValidator.indexOf(v) !== -1;
+          } else if (typeof userValidator === 'function') {
+            return userValidator(v);
+          } else {
+            return !!v;
+          }
+        },
+        [def.validator]
+      );
 
       // Parse the value from the url.
       const getValueFromURL = (searchString) => {
@@ -137,22 +144,25 @@ export function useQsStateCreator(options = {}) {
       const stateRef = useRef();
       stateRef.current = valueState;
 
-      const setValue = (value) => {
-        const v = validator(value) ? value : def.default;
-        // Dehydrate the value:
-        // Convert to a string usable in the url.
-        const dehydratedVal = dehydrator(v);
+      const setValue = useCallback(
+        (value) => {
+          const v = validator(value) ? value : def.default;
+          // Dehydrate the value:
+          // Convert to a string usable in the url.
+          const dehydratedVal = dehydrator(v);
 
-        // Store value in state.
-        setValueState(v);
+          // Store value in state.
+          setValueState(v);
 
-        // Because defaults can be objects, we compare on the dehydrated value.
-        const dehydratedDefaultVal = dehydrator(def.default);
-        storeInURL(
-          def.key,
-          dehydratedVal !== dehydratedDefaultVal ? dehydratedVal : null
-        );
-      };
+          // Because defaults can be objects, we compare on the dehydrated value.
+          const dehydratedDefaultVal = dehydrator(def.default);
+          storeInURL(
+            def.key,
+            dehydratedVal !== dehydratedDefaultVal ? dehydratedVal : null
+          );
+        },
+        [validator, def.default, def.key, dehydrator]
+      );
 
       // "Listen" to url changes and replace only if different from the currently
       // stored state.
@@ -180,9 +190,9 @@ export function useQsStateCreator(options = {}) {
     }
 
     // This version is just a way to make the use with memo quicker.
-    useQsState.memo = function useQsStateMemoized(v) {
+    useQsState.memo = function useQsStateMemoized(v, deps = []) {
       /* eslint-disable-next-line react-hooks/exhaustive-deps */
-      return useQsState(useMemo(() => v, []));
+      return useQsState(useMemo(() => v, deps));
     };
 
     return useQsState;
