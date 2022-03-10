@@ -69,17 +69,14 @@ That being said there are a couple of things that are up to you to ensure:
 
 The `commit` function will be called with `{search: 'search-string-safe-value'}`;
 
-If you were using `react-router` this would be the approach:
+If you were using `react-router` (v6) this would be the approach:
 ```js
 function Component () {
-  // react-router function to get the history for navigation.
-  const history = useHistory();
-  // react-router function to ensure the component re-renders when there is a
-  // location change.
-  useLocation();
+  // react-router hook for navigation.
+  const navigate = useNavigate();
 
   const useQsState = useQsStateCreator({
-    commit: history.push
+    commit: navigate
   });
 
   // ... remaining code.
