@@ -3,6 +3,7 @@
   "version": "1.0.5",
   "description": "URL querystring state manager",
   "main": "dist/index.js",
+  "types": "src/types.d.ts",
   "source": "src/index.js",
   "keywords": [
     "react",
