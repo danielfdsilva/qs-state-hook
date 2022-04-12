@@ -1,7 +1,7 @@
+import { useMemo } from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import { renderHook as renderHookServer } from '@testing-library/react-hooks/server';
 import sinon from 'sinon';
-import { useMemo } from 'react';
 
 import useQsStateCreator from '../src';
 import { COMMIT_DELAY } from '../src/qs-state-hook';
@@ -803,6 +803,71 @@ describe('QS State Hook', () => {
     // The url becomes empty because the value is the default.
     expect(commitMock.mock.calls[0][0]).toStrictEqual({
       search: ''
+    });
+    clock.restore();
+  });
+
+  it('should update the commit function when a new one is provided', () => {
+    const clock = sinon.useFakeTimers();
+
+    const commitMock = jest.fn();
+    const location = {
+      search: '?val=cat'
+    };
+
+    const { rerender, result } = renderHook(
+      ({ value }) => {
+        const useQsState = useQsStateCreator({
+          commit: (opts) => {
+            commitMock({ ...opts, value });
+          },
+          location
+        });
+
+        return useQsState(
+          useMemo(
+            () => ({
+              key: 'val'
+            }),
+            []
+          )
+        );
+      },
+      { initialProps: { value: '' } }
+    );
+
+    act(() => {
+      const [, setValue] = result.current;
+      setValue('ferret');
+    });
+
+    // QS State waits 100ms before committing to the url to ensure that batch
+    // requests are processed as one.
+    clock.tick(COMMIT_DELAY);
+
+    // The function was called exactly once
+    expect(commitMock.mock.calls.length).toBe(1);
+
+    // The first arg of the first call to the function was the value in the url.
+    expect(commitMock.mock.calls[0][0]).toStrictEqual({
+      search: 'val=ferret',
+      value: ''
+    });
+
+    rerender({ value: 'test' });
+
+    act(() => {
+      const [, setValue] = result.current;
+      setValue('duck');
+    });
+
+    clock.tick(COMMIT_DELAY);
+    expect(commitMock.mock.calls.length).toBe(2);
+
+    // The first arg of the first call to the function was the value in the url.
+    expect(commitMock.mock.calls[1][0]).toStrictEqual({
+      search: 'val=duck',
+      value: 'test'
     });
     clock.restore();
   });

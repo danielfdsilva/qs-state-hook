@@ -32,10 +32,13 @@ const identityFn = (v) => v;
 
 export function useQsStateCreator(options = {}) {
   const {
-    commit: commitToLocation = history.push,
+    commit: commitFn = history.push,
     // location is a mutable object.
     location = history.location
   } = options;
+
+  const commitToLocation = useRef();
+  commitToLocation.current = commitFn;
 
   return useMemo(() => {
     const commit = debounce(() => {
@@ -50,7 +53,9 @@ export function useQsStateCreator(options = {}) {
         ...commitQueue
       };
 
-      commitToLocation({ search: qs.stringify(qsObject, { skipNulls: true }) });
+      commitToLocation.current({
+        search: qs.stringify(qsObject, { skipNulls: true })
+      });
       // Once the commit happens clear the commit queue.
       commitQueue = {};
     }, COMMIT_DELAY);
@@ -197,7 +202,7 @@ export function useQsStateCreator(options = {}) {
 
     return useQsState;
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [commitToLocation]);
+  }, []);
 }
 
 export default useQsStateCreator;
