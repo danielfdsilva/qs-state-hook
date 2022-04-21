@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import useQsStateCreator from '../src';
 import { COMMIT_DELAY, QsStateDefinition } from '../src/qs-state-hook';
 
-const noop = () => {};
+const noop = () => { return; };
 
 describe('QS State Hook', () => {
   it('parses value from URL', () => {
