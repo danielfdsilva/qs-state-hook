@@ -69,7 +69,7 @@ describe('QS State Hook', () => {
     expect(result.current.val2).toBe('tulip');
   });
 
-  it('uses value from when initialized', () => {
+  it('uses value from url when initialized', () => {
     const location = {
       search: '?val=cat'
     };
@@ -397,6 +397,120 @@ describe('QS State Hook', () => {
     });
 
     expect(result.current[0]).toBe('cat');
+  });
+
+  it('should update the validator function when a new one is provided', () => {
+    const clock = sinon.useFakeTimers();
+
+    const commitMock = jest.fn();
+    const location = {
+      search: '?val=cat'
+    };
+
+    const validValues = ['cat', 'dog', 'bird'];
+
+    const { rerender, result } = renderHook(
+      ({ validValues }) => {
+        const useQsState = useQsStateCreator({
+          commit: commitMock,
+          location
+        });
+
+        return useQsState(
+          useMemo(
+            () => ({
+              key: 'val',
+              default: validValues[0],
+              validator: validValues
+            }),
+            [validValues]
+          )
+        );
+      },
+      { initialProps: { validValues } }
+    );
+
+    expect(result.current[0]).toBe('cat');
+
+    act(() => {
+      const [, setValue] = result.current;
+      // Set to a value that is not valid.
+      setValue('ferret');
+    });
+
+    expect(result.current[0]).toBe('cat');
+
+    // QS State waits 100ms before committing to the url to ensure that batch
+    // requests are processed as one.
+    clock.tick(COMMIT_DELAY);
+
+    // The function was called exactly once
+    expect(commitMock.mock.calls.length).toBe(1);
+
+    // The first arg of the first call to the function was the value in the url.
+    // Because the set value was invalid, nothing goes to the url because the
+    // default value gets set, and default values do not show in the url.
+    expect(commitMock.mock.calls[0][0]).toStrictEqual({
+      search: ''
+    });
+
+    // Update the list of valid values.
+    rerender({ validValues: ['dinosaur', 'ferret'] });
+
+    act(() => {
+      const [, setValue] = result.current;
+      setValue('ferret');
+    });
+
+    expect(result.current[0]).toBe('ferret');
+
+    clock.tick(COMMIT_DELAY);
+    expect(commitMock.mock.calls.length).toBe(2);
+
+    // The first arg of the first call to the function was the value in the url.
+    expect(commitMock.mock.calls[1][0]).toStrictEqual({
+      search: 'val=ferret'
+    });
+    clock.restore();
+  });
+
+  it('should update on url change with new validator', () => {
+    const location = {
+      search: '?val=cat'
+    };
+
+    const validValues = ['cat', 'dog', 'bird'];
+
+    const { rerender, result } = renderHook(
+      ({ validValues }) => {
+        const useQsState = useQsStateCreator({
+          commit: noop,
+          location
+        });
+
+        return useQsState(
+          useMemo(
+            () => ({
+              key: 'val',
+              default: null,
+              validator: validValues
+            }),
+            [validValues]
+          )
+        );
+      },
+      { initialProps: { validValues } }
+    );
+
+    expect(result.current[0]).toBe('cat');
+
+    location.search = '?val=ferret';
+    rerender({ validValues });
+    // null because ferret is not valid, and the default is null.
+    expect(result.current[0]).toBe(null);
+
+    rerender({ validValues: ['dinosaur', 'ferret'] });
+    expect(result.current[0]).toBe('ferret');
   });
 
   it('updates url after setting value', () => {
