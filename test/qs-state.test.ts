@@ -4,7 +4,7 @@ import { renderHook as renderHookServer } from '@testing-library/react-hooks/ser
 import sinon from 'sinon';
 
 import useQsStateCreator from '../src';
-import { COMMIT_DELAY } from '../src/qs-state-hook';
+import { COMMIT_DELAY, QsStateDefinition } from '../src/qs-state-hook';
 
 const noop = () => {};
 
@@ -23,7 +23,8 @@ describe('QS State Hook', () => {
       return useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -49,7 +50,8 @@ describe('QS State Hook', () => {
       const [val] = useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -57,7 +59,8 @@ describe('QS State Hook', () => {
       const [val2] = useQsState(
         useMemo(
           () => ({
-            key: 'val2'
+            key: 'val2',
+            default: null
           }),
           []
         )
@@ -88,7 +91,8 @@ describe('QS State Hook', () => {
       return useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -141,7 +145,8 @@ describe('QS State Hook', () => {
       return useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -169,10 +174,11 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState(
+      return useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -200,8 +206,9 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState.memo({
-        key: 'val'
+      return useQsState.memo<string>({
+        key: 'val',
+        default: null
       });
     });
 
@@ -216,7 +223,7 @@ describe('QS State Hook', () => {
   });
 
   it('uses hydrator function to get value from url', () => {
-    const hydratorMock = jest.fn(() => 'mocked hydrated');
+    const hydratorMock = jest.fn<string, any[]>(() => 'mocked hydrated');
     const location = {
       search: '?val=cat'
     };
@@ -231,6 +238,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             hydrator: hydratorMock
           }),
           []
@@ -247,7 +255,7 @@ describe('QS State Hook', () => {
   });
 
   it('uses validator function and returns value when valid', () => {
-    const validatorMock = jest.fn(() => true);
+    const validatorMock = jest.fn<boolean, any[]>(() => true);
     const location = {
       search: '?val=cat'
     };
@@ -262,6 +270,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             validator: validatorMock
           }),
           []
@@ -278,7 +287,7 @@ describe('QS State Hook', () => {
   });
 
   it('uses validator function and returns default when fails', () => {
-    const validatorMock = jest.fn(() => false);
+    const validatorMock = jest.fn<boolean, any[]>(() => false);
     const location = {
       search: '?val=cat'
     };
@@ -326,6 +335,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             validator: validValues
           }),
           []
@@ -527,10 +537,11 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState(
+      return useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -573,10 +584,11 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState(
+      return useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -614,18 +626,20 @@ describe('QS State Hook', () => {
         location
       });
 
-      const [, setVal] = useQsState(
+      const [, setVal] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
       );
-      const [, setColor] = useQsState(
+      const [, setColor] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'color'
+            key: 'color',
+            default: null
           }),
           []
         )
@@ -673,18 +687,20 @@ describe('QS State Hook', () => {
         location
       });
 
-      const [, setVal] = useQsState(
+      const [, setVal] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
       );
-      const [, setColor] = useQsState(
+      const [, setColor] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'color'
+            key: 'color',
+            default: null
           }),
           []
         )
@@ -745,6 +761,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             dehydrator: dehydratorMock
           }),
           []
@@ -873,11 +890,11 @@ describe('QS State Hook', () => {
       other: 'default prop never on URL'
     };
 
-    const qsDef = {
+    const qsDef: QsStateDefinition<typeof complexDefault> = {
       key: 'val',
       default: complexDefault,
       dehydrator: (v) => {
-        return `${v.type}|${v.count}`;
+        return `${v?.type}|${v?.count}`;
       },
       hydrator: (v) => {
         if (!v) return null;
@@ -891,7 +908,7 @@ describe('QS State Hook', () => {
         commit: commitMock,
         location
       });
-      return useQsState(qsDef);
+      return useQsState<typeof complexDefault>(qsDef);
     });
 
     expect(result.current[0]).toStrictEqual({
@@ -938,10 +955,11 @@ describe('QS State Hook', () => {
           location
         });
 
-        return useQsState(
+        return useQsState<string>(
           useMemo(
             () => ({
-              key: 'val'
+              key: 'val',
+              default: null
             }),
             []
           )
