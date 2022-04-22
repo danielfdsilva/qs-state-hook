@@ -1,12 +1,12 @@
+import { useMemo } from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import { renderHook as renderHookServer } from '@testing-library/react-hooks/server';
 import sinon from 'sinon';
-import { useMemo } from 'react';
 
 import useQsStateCreator from '../src';
-import { COMMIT_DELAY } from '../src/qs-state-hook';
+import { COMMIT_DELAY, QsStateDefinition } from '../src/qs-state-hook';
 
-const noop = () => {};
+const noop = () => { return; };
 
 describe('QS State Hook', () => {
   it('parses value from URL', () => {
@@ -23,7 +23,8 @@ describe('QS State Hook', () => {
       return useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -49,7 +50,8 @@ describe('QS State Hook', () => {
       const [val] = useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -57,7 +59,8 @@ describe('QS State Hook', () => {
       const [val2] = useQsState(
         useMemo(
           () => ({
-            key: 'val2'
+            key: 'val2',
+            default: null
           }),
           []
         )
@@ -69,7 +72,7 @@ describe('QS State Hook', () => {
     expect(result.current.val2).toBe('tulip');
   });
 
-  it('uses value from when initialized', () => {
+  it('uses value from url when initialized', () => {
     const location = {
       search: '?val=cat'
     };
@@ -88,7 +91,8 @@ describe('QS State Hook', () => {
       return useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -141,7 +145,8 @@ describe('QS State Hook', () => {
       return useQsState(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -169,10 +174,11 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState(
+      return useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -200,8 +206,9 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState.memo({
-        key: 'val'
+      return useQsState.memo<string>({
+        key: 'val',
+        default: null
       });
     });
 
@@ -216,7 +223,7 @@ describe('QS State Hook', () => {
   });
 
   it('uses hydrator function to get value from url', () => {
-    const hydratorMock = jest.fn(() => 'mocked hydrated');
+    const hydratorMock = jest.fn<string, any[]>(() => 'mocked hydrated');
     const location = {
       search: '?val=cat'
     };
@@ -231,6 +238,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             hydrator: hydratorMock
           }),
           []
@@ -247,7 +255,7 @@ describe('QS State Hook', () => {
   });
 
   it('uses validator function and returns value when valid', () => {
-    const validatorMock = jest.fn(() => true);
+    const validatorMock = jest.fn<boolean, any[]>(() => true);
     const location = {
       search: '?val=cat'
     };
@@ -262,6 +270,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             validator: validatorMock
           }),
           []
@@ -278,7 +287,7 @@ describe('QS State Hook', () => {
   });
 
   it('uses validator function and returns default when fails', () => {
-    const validatorMock = jest.fn(() => false);
+    const validatorMock = jest.fn<boolean, any[]>(() => false);
     const location = {
       search: '?val=cat'
     };
@@ -326,6 +335,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             validator: validValues
           }),
           []
@@ -399,6 +409,120 @@ describe('QS State Hook', () => {
     expect(result.current[0]).toBe('cat');
   });
 
+  it('should update the validator function when a new one is provided', () => {
+    const clock = sinon.useFakeTimers();
+
+    const commitMock = jest.fn();
+    const location = {
+      search: '?val=cat'
+    };
+
+    const validValues = ['cat', 'dog', 'bird'];
+
+    const { rerender, result } = renderHook(
+      ({ validValues }) => {
+        const useQsState = useQsStateCreator({
+          commit: commitMock,
+          location
+        });
+
+        return useQsState(
+          useMemo(
+            () => ({
+              key: 'val',
+              default: validValues[0],
+              validator: validValues
+            }),
+            [validValues]
+          )
+        );
+      },
+      { initialProps: { validValues } }
+    );
+
+    expect(result.current[0]).toBe('cat');
+
+    act(() => {
+      const [, setValue] = result.current;
+      // Set to a value that is not valid.
+      setValue('ferret');
+    });
+
+    expect(result.current[0]).toBe('cat');
+
+    // QS State waits 100ms before committing to the url to ensure that batch
+    // requests are processed as one.
+    clock.tick(COMMIT_DELAY);
+
+    // The function was called exactly once
+    expect(commitMock.mock.calls.length).toBe(1);
+
+    // The first arg of the first call to the function was the value in the url.
+    // Because the set value was invalid, nothing goes to the url because the
+    // default value gets set, and default values do not show in the url.
+    expect(commitMock.mock.calls[0][0]).toStrictEqual({
+      search: ''
+    });
+
+    // Update the list of valid values.
+    rerender({ validValues: ['dinosaur', 'ferret'] });
+
+    act(() => {
+      const [, setValue] = result.current;
+      setValue('ferret');
+    });
+
+    expect(result.current[0]).toBe('ferret');
+
+    clock.tick(COMMIT_DELAY);
+    expect(commitMock.mock.calls.length).toBe(2);
+
+    // The first arg of the first call to the function was the value in the url.
+    expect(commitMock.mock.calls[1][0]).toStrictEqual({
+      search: 'val=ferret'
+    });
+    clock.restore();
+  });
+
+  it('should update on url change with new validator', () => {
+    const location = {
+      search: '?val=cat'
+    };
+
+    const validValues = ['cat', 'dog', 'bird'];
+
+    const { rerender, result } = renderHook(
+      ({ validValues }) => {
+        const useQsState = useQsStateCreator({
+          commit: noop,
+          location
+        });
+
+        return useQsState(
+          useMemo(
+            () => ({
+              key: 'val',
+              default: null,
+              validator: validValues
+            }),
+            [validValues]
+          )
+        );
+      },
+      { initialProps: { validValues } }
+    );
+
+    expect(result.current[0]).toBe('cat');
+
+    location.search = '?val=ferret';
+    rerender({ validValues });
+    // null because ferret is not valid, and the default is null.
+    expect(result.current[0]).toBe(null);
+
+    rerender({ validValues: ['dinosaur', 'ferret'] });
+    expect(result.current[0]).toBe('ferret');
+  });
+
   it('updates url after setting value', () => {
     const clock = sinon.useFakeTimers();
 
@@ -413,10 +537,11 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState(
+      return useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -459,10 +584,11 @@ describe('QS State Hook', () => {
         location
       });
 
-      return useQsState(
+      return useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
@@ -500,18 +626,20 @@ describe('QS State Hook', () => {
         location
       });
 
-      const [, setVal] = useQsState(
+      const [, setVal] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
       );
-      const [, setColor] = useQsState(
+      const [, setColor] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'color'
+            key: 'color',
+            default: null
           }),
           []
         )
@@ -559,18 +687,20 @@ describe('QS State Hook', () => {
         location
       });
 
-      const [, setVal] = useQsState(
+      const [, setVal] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'val'
+            key: 'val',
+            default: null
           }),
           []
         )
       );
-      const [, setColor] = useQsState(
+      const [, setColor] = useQsState<string>(
         useMemo(
           () => ({
-            key: 'color'
+            key: 'color',
+            default: null
           }),
           []
         )
@@ -631,6 +761,7 @@ describe('QS State Hook', () => {
         useMemo(
           () => ({
             key: 'val',
+            default: null,
             dehydrator: dehydratorMock
           }),
           []
@@ -759,11 +890,11 @@ describe('QS State Hook', () => {
       other: 'default prop never on URL'
     };
 
-    const qsDef = {
+    const qsDef: QsStateDefinition<typeof complexDefault> = {
       key: 'val',
       default: complexDefault,
       dehydrator: (v) => {
-        return `${v.type}|${v.count}`;
+        return `${v?.type}|${v?.count}`;
       },
       hydrator: (v) => {
         if (!v) return null;
@@ -777,7 +908,7 @@ describe('QS State Hook', () => {
         commit: commitMock,
         location
       });
-      return useQsState(qsDef);
+      return useQsState<typeof complexDefault>(qsDef);
     });
 
     expect(result.current[0]).toStrictEqual({
@@ -803,6 +934,72 @@ describe('QS State Hook', () => {
     // The url becomes empty because the value is the default.
     expect(commitMock.mock.calls[0][0]).toStrictEqual({
       search: ''
+    });
+    clock.restore();
+  });
+
+  it('should update the commit function when a new one is provided', () => {
+    const clock = sinon.useFakeTimers();
+
+    const commitMock = jest.fn();
+    const location = {
+      search: '?val=cat'
+    };
+
+    const { rerender, result } = renderHook(
+      ({ value }) => {
+        const useQsState = useQsStateCreator({
+          commit: (opts) => {
+            commitMock({ ...opts, value });
+          },
+          location
+        });
+
+        return useQsState<string>(
+          useMemo(
+            () => ({
+              key: 'val',
+              default: null
+            }),
+            []
+          )
+        );
+      },
+      { initialProps: { value: '' } }
+    );
+
+    act(() => {
+      const [, setValue] = result.current;
+      setValue('ferret');
+    });
+
+    // QS State waits 100ms before committing to the url to ensure that batch
+    // requests are processed as one.
+    clock.tick(COMMIT_DELAY);
+
+    // The function was called exactly once
+    expect(commitMock.mock.calls.length).toBe(1);
+
+    // The first arg of the first call to the function was the value in the url.
+    expect(commitMock.mock.calls[0][0]).toStrictEqual({
+      search: 'val=ferret',
+      value: ''
+    });
+
+    rerender({ value: 'test' });
+
+    act(() => {
+      const [, setValue] = result.current;
+      setValue('duck');
+    });
+
+    clock.tick(COMMIT_DELAY);
+    expect(commitMock.mock.calls.length).toBe(2);
+
+    // The first arg of the first call to the function was the value in the url.
+    expect(commitMock.mock.calls[1][0]).toStrictEqual({
+      search: 'val=duck',
+      value: 'test'
     });
     clock.restore();
   });

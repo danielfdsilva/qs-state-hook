@@ -1,18 +1,37 @@
-import babel from '@rollup/plugin-babel';
+import dts from 'rollup-plugin-dts';
+import esbuild from 'rollup-plugin-esbuild';
 
 import pkg from './package.json';
 
-export default {
-  input: 'src/index.js',
-  output: [
-    {
-      file: pkg.main,
-      format: 'cjs',
-      exports: 'named',
-      sourcemap: false,
-      strict: false
-    }
-  ],
-  plugins: [babel({ babelHelpers: 'bundled' })],
+const name = require('./package.json').main.replace(/\.js$/, '');
+
+const bundle = (config) => ({
+  ...config,
+  input: 'src/index.ts',
   external: Object.keys(pkg.peerDependencies)
-};
+});
+
+export default [
+  bundle({
+    plugins: [esbuild()],
+    output: [
+      {
+        file: `${name}.js`,
+        format: 'cjs',
+        sourcemap: true
+      },
+      {
+        file: `${name}.mjs`,
+        format: 'es',
+        sourcemap: true
+      }
+    ]
+  }),
+  bundle({
+    plugins: [dts()],
+    output: {
+      file: `${name}.d.ts`,
+      format: 'es'
+    }
+  })
+];
