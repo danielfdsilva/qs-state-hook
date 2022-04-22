@@ -7,7 +7,8 @@ module.exports = {
           browsers: 'last 2 versions'
         }
       }
-    ]
+    ],
+    '@babel/preset-typescript'
   ],
   plugins: [
     '@babel/plugin-transform-spread',

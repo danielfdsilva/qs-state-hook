@@ -20,7 +20,7 @@ The QS State Hook allows you to manage component state by storing values in the 
 
 ### Motivation
 Certain page states should be shareable. This becomes critical when we're doing data visualizations or want to share the current state of the page we're viewing. Things like order options or filters applied to a data table should be easy to share.  
-Generating an url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult  
+Generating an url from a given state is easy enough but keeping it up-to-date as things change while at the same time being able to respond to url changes becomes more difficult.  
 The QS State Hook aims to solve this problem, making it easy to get and set the url state.
 
 ## Getting started
@@ -67,7 +67,7 @@ That being said there are a couple of things that are up to you to ensure:
 - The component must re-render on every location change. This is needed so QS State can pick up the location change.
 - You must provide a function to store the new values in the url. This will depend on the routing engine and how it handles navigation. This is needed because other parts of your app may need to respond to location changes.
 
-The `commit` function will be called with `{search: 'search-string-safe-value'}`;
+The `commit` function will be called with `{ search: 'search-string-safe-value' }`;
 
 If you were using `react-router` (v6) this would be the approach:
 ```js
@@ -83,12 +83,18 @@ function Component () {
 }
 ```
 
-If you are using `gatsby` things get simpler, since re-rendering a page on location change is built in, when using `navigate`:
+If you are using `gatsby` things get a bit more complicated:
 ```js
 import { navigate } from 'gatsby';
+
+// ‼️ IMPORTANT:
+// The commit function should be stable (i.e. not changing between renders
+// unless needed). It would also be possible to do this with a useCallback hook.
+const qsStateCommit = ({ search }) => navigate(`?${search}`);
+
 function Component () {
   const useQsState = useQsStateCreator({
-    commit: ({ search }) => navigate(`?${search}`)
+    commit: qsStateCommit
   });
 
   // ... remaining code.
@@ -99,10 +105,10 @@ function Component () {
 Once we have our `useQsState` created, the next step is to define how the actual state is managed.
 Each call to `useQsState` should manage a single url value, and you may use it as many times as you like.
 
-**IMPORTANT:**  
+**‼️ IMPORTANT:**  
 The state definition shouldn't change unless its values must be updated. Therefore it should be defined statically outside the component or used with `useMemo`.
 
-The bare minimum QS State configuration is the `key` property which defines how the value is stored in the url, however having a value to default to is useful.
+The bare minimum QS State configuration is the `key` and `default` properties which defines how the value is stored in the url and what to return if no value (or invalid one) is set.
 ```js
 const [animalValue, setAnimalValue]  = useQsState(useMemo(() => ({
   key: 'animal',
